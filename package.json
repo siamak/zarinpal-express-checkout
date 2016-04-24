@@ -1,0 +1,21 @@
+{
+  "name": "zarinpal-express-checkout",
+  "version": "0.1.0",
+  "description": "ZarinPal Express checkout",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": [
+    "zarinpal",
+    "express",
+    "nodejs"
+  ],
+  "author": "Siamak Mokhtari <hi@siamak.work>",
+  "license": "MIT",
+  "dependencies": {
+    "body-parser": "^1.15.0",
+    "express": "^4.13.4",
+    "zarinpal-checkout": "^0.1.1"
+  }
+}
