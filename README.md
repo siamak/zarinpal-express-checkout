@@ -1,8 +1,7 @@
 # ZarinPal Express Checkout
 A demo from [ZarinPal Checkout](https://github.com/siamakmokhtari/zarinpal-checkout) on express.js.
 ## 💡 Usage
-Clone this repo and Open `index.js`. It has Methods and Routers from `zarinpal-checkout`.
-
+Clone this repo and Open `index.js`. It has Methods and Routers from `zarinpal-checkout` and Set your `MerchantID`.
 
 ## 🍀 License
 Copyright (c) 2016 Siamak Mokhtari. Licensed under [MIT](http://siamak.mit-license.org).
