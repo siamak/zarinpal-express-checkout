@@ -14,7 +14,7 @@ app.use(bodyParser.json());
  * @param {String} 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx' [MerchantID]
  * @param {bool} false [toggle `Sandbox` mode]
  */
-var zarinpal = ZarinpalCheckout.create('xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx', false);
+var zarinpal = ZarinpalCheckout.create('c5fd5af2-f981-11e5-8d49-005056a205be', false);
 
 /**
  * Route: PaymentRequest [module]
@@ -29,7 +29,7 @@ app.get('/PaymentRequest', function(req, res) {
 		Mobile: '09120000000'
 	}).then(function (response) {
 		if (response.status == 100) {
-			res.redirect(url);
+			res.redirect(response.url);
 		}
 	}).catch(function (err) {
 		console.log(err);
