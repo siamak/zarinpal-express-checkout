@@ -16,6 +16,6 @@
   "dependencies": {
     "body-parser": "^1.15.0",
     "express": "^4.13.4",
-    "zarinpal-checkout": "^0.2.3"
+    "zarinpal-checkout": "^0.2.4"
   }
 }
