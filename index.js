@@ -14,7 +14,7 @@ app.use(bodyParser.json());
  * @param {String} 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx' [MerchantID]
  * @param {bool} false [toggle `Sandbox` mode]
  */
-var zarinpal = ZarinpalCheckout.create('c5fd5af2-f981-11e5-8d49-005056a205be', false);
+var zarinpal = ZarinpalCheckout.create('xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx', true);
 
 /**
  * Route: PaymentRequest [module]
@@ -46,10 +46,10 @@ app.get('/PaymentVerification/:amount/:token', function(req, res) {
 		Amount: req.params.amount,
 		Authority: req.params.token,
 	}).then(function (response) {
-		if (response.status == -21) {
-			console.log('Empty!');
+		if (response.status == 101) {
+			console.log("Verified! Ref ID: " + response.RefID);
 		} else {
-			console.log('Yohoooo! ' + response.RefID);
+			console.log(response);
 		}
 	}).catch(function (err) {
 		console.log(err);
