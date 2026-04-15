@@ -1,99 +1,124 @@
 'use strict';
 
-var express          = require('express'),
-		ZarinpalCheckout = require('zarinpal-checkout'),
-		bodyParser       = require('body-parser'),
-		app              = express();
+require('dotenv').config();
 
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
+const express = require('express');
+const ZarinpalCheckout = require('zarinpal-checkout');
 
+const DEFAULT_MERCHANT_ID = process.env.ZARINPAL_MERCHANT_ID || 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx';
+const DEFAULT_CALLBACK_URL = process.env.ZARINPAL_CALLBACK_URL || 'https://example.com/payment/verify';
 
-/**
- * Initial ZarinPal module.
- * @param {String} 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx' [MerchantID]
- * @param {bool} false [toggle `Sandbox` mode]
- */
-var zarinpal = ZarinpalCheckout.create('xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx', true);
+function createClient() {
+  const useSandbox = process.env.ZARINPAL_SANDBOX !== 'false';
+  const createWithOptions = ZarinpalCheckout.createWithOptions;
 
-/**
- * Route: PaymentRequest [module]
- * @return {String} URL [Payement Authority]
- */
-app.get('/PaymentRequest', function(req, res) {
-	zarinpal.PaymentRequest({
-		Amount: '1000',
-		CallbackURL: 'http://siamak.us',
-		Description: 'Hello NodeJS API.',
-		Email: 'hi@siamak.work',
-		Mobile: '09120000000'
-	}).then(function (response) {
-		if (response.status == 100) {
-			res.redirect(response.url);
-		}
-	}).catch(function (err) {
-		console.log(err);
-	});
-});
+  if (typeof createWithOptions === 'function') {
+    return createWithOptions(DEFAULT_MERCHANT_ID, {
+      sandbox: useSandbox,
+      currency: 'IRT',
+      timeoutMs: 10000,
+    });
+  }
 
+  // Fallback for older builds that only expose create().
+  return ZarinpalCheckout.create(DEFAULT_MERCHANT_ID, useSandbox, 'IRT');
+}
 
-/**
- * Route: PaymentVerification [module]
- * @return {number} RefID [Check Paymenet state]
- */
-app.get('/PaymentVerification/:amount/:token', function(req, res) {
-	zarinpal.PaymentVerification({
-		Amount: req.params.amount,
-		Authority: req.params.token,
-	}).then(function (response) {
-		if (response.status == 101) {
-			console.log("Verified! Ref ID: " + response.RefID);
-		} else {
-			console.log(response);
-		}
-	}).catch(function (err) {
-		console.log(err);
-	});
-});
+function createApp(zarinpalClient) {
+  const app = express();
+  const zarinpal = zarinpalClient || createClient();
 
+  app.use(express.urlencoded({ extended: false }));
+  app.use(express.json());
 
-/**
- * Route: UnverifiedTransactions [module]
- * @return {Object} authorities [List of Unverified transactions]
- */
-app.get('/UnverifiedTransactions', function(req, res) {
-	zarinpal.UnverifiedTransactions().then(function (response) {
-		if (response.status == 100) {
-			console.log(response.authorities);
-		}
-	}).catch(function (err) {
-		console.log(err);
-	});
-});
+  app.get('/payment/request', async function paymentRequest(req, res) {
+    try {
+      const response = await zarinpal.PaymentRequest({
+        Amount: Number(req.query.amount || 1000),
+        CallbackURL: String(req.query.callbackUrl || DEFAULT_CALLBACK_URL),
+        Description: String(req.query.description || 'Hello NodeJS API.'),
+        Email: req.query.email ? String(req.query.email) : undefined,
+        Mobile: req.query.mobile ? String(req.query.mobile) : undefined,
+      });
 
+      return res.status(200).json(response);
+    } catch (error) {
+      return res.status(500).json({ message: 'PaymentRequest failed', error });
+    }
+  });
 
-/**
- * Route: Refresh Authority [module]
- * @param {number} expire [(1800 / 60) = 30min]
- * @return {String} status [Status of Authority]
- */
-app.get('/RefreshAuthority/:expire/:token', function(req, res) {
-	zarinpal.RefreshAuthority({
-		Authority: req.params.token,
-		Expire: req.params.expire
-	}).then(function (response) {
-		if (response.status == 100) {
-			res.send('<h2>You can Use: <u>' + req.params.token + '</u> — Expire in: <u>' + req.params.expire + '</u></h2>');
-		}
-	}).catch(function (err) {
-		console.log(err);
-	});
-});
+  app.get('/payment/verify', async function paymentVerification(req, res) {
+    const status = String(req.query.Status || '');
+    const authority = String(req.query.Authority || '');
 
+    if (status && status !== 'OK') {
+      return res.status(400).json({ message: 'Payment cancelled by user.' });
+    }
 
-/**
- * Serve App on 9990
- */
-app.listen(9990, function() {
-	console.log('App is Running on Port 9990.');
-});
+    if (!authority) {
+      return res.status(400).json({ message: 'Missing Authority query param.' });
+    }
+
+    try {
+      const response = await zarinpal.PaymentVerification({
+        Amount: Number(req.query.Amount || req.query.amount || 1000),
+        Authority: authority,
+      });
+
+      return res.status(200).json(response);
+    } catch (error) {
+      return res.status(500).json({ message: 'PaymentVerification failed', error });
+    }
+  });
+
+  app.get('/payment/unverified', async function unverifiedTransactions(req, res) {
+    try {
+      const response = await zarinpal.UnverifiedTransactions();
+      return res.status(200).json(response);
+    } catch (error) {
+      return res.status(500).json({ message: 'UnverifiedTransactions failed', error });
+    }
+  });
+
+  app.get('/payment/refresh/:authority/:expire', async function refreshAuthority(req, res) {
+    try {
+      const response = await zarinpal.RefreshAuthority({
+        Authority: req.params.authority,
+        Expire: Number(req.params.expire),
+      });
+
+      return res.status(200).json(response);
+    } catch (error) {
+      return res.status(500).json({ message: 'RefreshAuthority failed', error });
+    }
+  });
+
+  app.get('/payment/token/:token', function tokenBeautifier(req, res) {
+    const segments = zarinpal.TokenBeautifier(req.params.token);
+    return res.status(200).json({ token: req.params.token, segments });
+  });
+
+  app.get('/health', function health(req, res) {
+    return res.status(200).json({
+      ok: true,
+      package: 'zarinpal-checkout',
+      version: ZarinpalCheckout.version || null,
+    });
+  });
+
+  return app;
+}
+
+if (require.main === module) {
+  const app = createApp();
+  const port = Number(process.env.PORT || 9990);
+
+  app.listen(port, function onListen() {
+    console.log('App is running on port %d.', port);
+  });
+}
+
+module.exports = {
+  createApp,
+  createClient,
+};
