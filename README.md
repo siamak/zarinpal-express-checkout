@@ -13,6 +13,12 @@ This project uses the modern `zarinpal-checkout` package while keeping the famil
 If you want the core package documentation, see the original repository README:
 [`zarinpal-checkout`](https://github.com/siamak/zarinpal-checkout/raw/refs/heads/main/README.md)
 
+## Package Note
+This repository is an Express integration example for the npm package
+[`zarinpal-checkout`](https://www.npmjs.com/package/zarinpal-checkout), not the core package source code.
+- Core package repository: [`siamak/zarinpal-checkout`](https://github.com/siamak/zarinpal-checkout)
+- Core package README: [`README.md`](https://github.com/siamak/zarinpal-checkout/raw/refs/heads/main/README.md)
+  
 ## Features
 
 - Express 5 demo routes for all major checkout methods
