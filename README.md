@@ -1,5 +1,12 @@
 # ZarinPal Express Checkout
 
+[![npm version](https://img.shields.io/npm/v/zarinpal-checkout.svg)](https://www.npmjs.com/package/zarinpal-checkout)
+[![npm total downloads](https://img.shields.io/npm/dt/zarinpal-checkout?label=total%20downloads)](https://www.npmjs.com/package/zarinpal-checkout)
+[![CI](https://github.com/siamak/zarinpal-checkout/actions/workflows/ci.yml/badge.svg)](https://github.com/siamak/zarinpal-checkout/actions/workflows/ci.yml)
+[![Wiki](https://img.shields.io/badge/Wiki-Documentation-blue)](https://github.com/siamak/zarinpal-checkout/wiki)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![TypeScript](https://img.shields.io/badge/TypeScript-Ready-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+
 Express demo app for `zarinpal-checkout` v1 APIs.
 
 This project uses the modern `zarinpal-checkout` package while keeping the familiar method names:
